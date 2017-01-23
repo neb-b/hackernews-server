@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 app.use('/stories', require('./routes/stories'))
 app.use('/comments', require('./routes/comments'))
 
-app.get('/', (req, res) => res.send('Hello'))
+app.get('/', (req, res) => {res.send({hello: 'world'})})
 
 app.listen(3000, function () {
   console.log('server listening')
