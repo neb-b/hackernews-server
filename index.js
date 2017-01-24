@@ -5,6 +5,7 @@ const axios = require('axios')
 const Promise = require('bluebird')
 const morgan = require('morgan')
 const app = express()
+const PORT = process.env.PORT || 3000
 
 app.use(morgan('dev'));
 app.use(bodyParser.json())
@@ -15,6 +16,6 @@ app.use('/comments', require('./routes/comments'))
 
 app.get('/', (req, res) => {res.send({hello: 'world'})})
 
-app.listen(3000, function () {
+app.listen(PORT, function () {
   console.log('server listening')
 })
