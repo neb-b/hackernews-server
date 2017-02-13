@@ -14,8 +14,9 @@ const fetchStories = (ids) => {
   return Promise.all(ids.slice(0,30).map(fetchStory))
 }
 
-Router.get('/top', (req, res) => {
-  const url = `${ROOT_URL}/topstories.json`
+Router.get('/:endpoint', (req, res) => {
+  const endpoint = req.params.endpoint
+  const url = `${ROOT_URL}/${endpoint}.json`
 
   axios(url)
     .then((response) => fetchStories(response.data))
