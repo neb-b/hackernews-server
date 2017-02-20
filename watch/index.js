@@ -19,14 +19,17 @@ exports.createConnection = function(server) {
 
   const io = socketIO(server)
   const now = Date.now()
-  const before = now - MS_IN_HOUR
+  const oneHourPrior = now - MS_IN_HOUR
 
   io.on('connection', (socket) => {
     console.log('connected to browser...')
 
+    const now = Date.now()
+    const oneHourPrior = now - MS_IN_HOUR
+
     client.multi()
       .zscore('requests', 'total')
-      .zcount('history', before, now)
+      .zcount('history', oneHourPrior, now)
       .exec((err, results) => {
         if (err) return reject(err)
 
@@ -48,18 +51,24 @@ exports.watch = function(req, res, next) {
 
   const updateRedis = () => {
     const now = Date.now()
-    const before = now - MS_IN_HOUR
+    const oneHourPrior = now - MS_IN_HOUR
 
     return new Promise((resolve, reject) => {
       client.multi()
         .zscore('requests', 'total')
-        .zcount('history', before, now)
         .zincrby('requests', 1, 'total')
+        .zcount('history', oneHourPrior, now)
         .zadd('history', now, now)
         .exec((err, results) => {
           if (err) return reject(err)
 
-          const dashboardData = createDashboard(results)
+          const totalRequests = JSON.parse(results[0]) + 1 || 1
+          const requestsLastHour = results[2] + 1 || 1
+
+          const dashboardData = {
+            totalRequests, requestsLastHour
+          }
+
           resolve(dashboardData)
         })
     })
