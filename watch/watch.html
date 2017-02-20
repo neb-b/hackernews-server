@@ -66,8 +66,8 @@
 
 (function loadDashboard() {
   const connectToServer = () => {
-    // const socket = io('https://hacker-news-server.herokuapp.com')
-    const socket = io('http://localhost:3000')
+    const socket = io('https://hacker-news-server.herokuapp.com')
+    // const socket = io('http://localhost:3000')
     socket.on('request', (requestData) => {
       const data = JSON.parse(requestData)
 
