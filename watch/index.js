@@ -1,61 +1,83 @@
 const Promise = require('bluebird')
 const redis = require('redis')
-const REDIS_PORT = process.env.REDIS_URL || 6379
+const client = redis.createClient(process.env.REDIS_URL || 6379)
 const path = require('path')
-const client = redis.createClient(REDIS_PORT)
 const socketIO = require('socket.io')
+const MS_IN_HOUR = 3600000
 
-client.on('connect', () => {
-  console.log('connected to redis...')
-})
+const createDashboard = (results) => {
+  const totalRequests = JSON.parse(results[0]) || 0
+  const requestsLastHour = results[1] || 0
 
-exports.init = (server) => {
+  return {
+    totalRequests, requestsLastHour
+  }
+}
+
+exports.createConnection = function(server) {
   console.log('\nSetting up dashboard... \n');
+
   const io = socketIO(server)
+  const now = Date.now()
+  const before = now - MS_IN_HOUR
 
   io.on('connection', (socket) => {
     console.log('connected to browser...')
-    client.hget('hackernews', 'requests', (err, value) => {
-      io.emit('request', value)
-    })
-  })
 
+    client.multi()
+      .zscore('requests', 'total')
+      .zcount('history', before, now)
+      .exec((err, results) => {
+        if (err) return reject(err)
+
+        const dashboard = createDashboard(results)
+        io.emit('request', JSON.stringify(dashboard))
+      })
+  })
   return io
 }
 
-
-exports.dashboard = function(options, req, res, next) {
-  const io = this
+exports.watch = function(req, res, next) {
+  const options = this
+  const io = options.dashboardConnection
   const dashboardPath = options.dashboardPath
 
-  const newRequest = () => {
+  const emit = (key, data) => {
+    io.emit(key, JSON.stringify(data))
+  }
+
+  const updateRedis = () => {
+    const now = Date.now()
+    const before = now - MS_IN_HOUR
+
     return new Promise((resolve, reject) => {
-      client.hget('hackernews', 'requests', (err, value) => {
-        if (err) {
-          console.log("error!", err)
-          reject(err)
-        }
+      client.multi()
+        .zscore('requests', 'total')
+        .zcount('history', before, now)
+        .zincrby('requests', 1, 'total')
+        .zadd('history', now, now)
+        .exec((err, results) => {
+          if (err) return reject(err)
 
-        const newTotal = value ? parseInt(value) + 1 : 1
-
-        client.hset('hackernews', 'requests', newTotal, (err, result) => {
-          if (err) {
-            console.log('error initializing redis', err)
-            reject(err)
-          }
-
-          console.log('emitting new total', newTotal)
-          io.emit('request', newTotal)
-          resolve()
+          const dashboardData = createDashboard(results)
+          resolve(dashboardData)
         })
-      })
     })
   }
 
   if (req.path === dashboardPath) {
     res.sendFile(path.join(`${__dirname}/watch.html`))
   } else {
-    newRequest()
+    updateRedis()
+      .then((dashboard) => emit('request', dashboard))
       .then(next)
+      .catch((err) => {
+        console.log("error", err)
+        next()
+      })
   }
 }
+
+client.on('connect', () => {
+  console.log('connected to redis...')
+})

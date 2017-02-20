@@ -3,16 +3,17 @@ const bodyParser = require('body-parser')
 const axios = require('axios')
 const morgan = require('morgan')
 const PORT = process.env.PORT || 3000
-
 const express = require('express')
 const app = express()
 const server = require('http').Server(app)
-const watch = require('./watch')
-const dashboardConnection = watch.init(server)
+const watchNode = require('./watch')
+
+const dashboardConnection = watchNode.createConnection(server)
 const options = {
+  dashboardConnection,
   dashboardPath: '/dashboard'
 }
-app.use(watch.dashboard.bind(dashboardConnection, options))
+app.use(watchNode.watch.bind(options))
 
 app.use(morgan('dev'));
 app.use(bodyParser.json())

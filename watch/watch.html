@@ -9,7 +9,7 @@
       background-color: #2f2f2f
     }
 
-    h1, h2 {
+    h1, h2, h3 {
       font-family: 'Montserrat', sans-serif;
       color: #f6f6f6;
     }
@@ -57,6 +57,7 @@
     <h1 class="title">hNews dashboard</h1>
     <div id="beacon" class="beacon"></div>
     <h2 class="center totalRequests">Total requests: <span id="total"></span></h2>
+    <h3 class="center">Requests/Hour: <span id="rph"></span></h3>
   </div>
 </body>
 
@@ -65,10 +66,14 @@
 
 (function loadDashboard() {
   const connectToServer = () => {
-    const socket = io('https://hacker-news-server.herokuapp.com')
-    // const socket = io('http://localhost:3000')
-    socket.on('request', (totalRequests) => {
-      updateDashboard(totalRequests)
+    // const socket = io('https://hacker-news-server.herokuapp.com')
+    const socket = io('http://localhost:3000')
+    socket.on('request', (requestData) => {
+      const data = JSON.parse(requestData)
+
+      const totalRequests = data.totalRequests
+      const requestsLastHour = data.requestsLastHour
+      updateDashboard(totalRequests, requestsLastHour)
     })
   }
 
@@ -88,8 +93,14 @@
     totalSpan.innerHTML = total
   }
 
-  const updateDashboard = (total) => {
+  const updateRequestsPerHour = (total) => {
+    const requestsPerHour = document.querySelector('#rph')
+    requestsPerHour.innerHTML = total
+  }
+
+  const updateDashboard = (total, totalLastHour) => {
     updateBeacon()
+    updateRequestsPerHour(totalLastHour)
     updateTotal(total)
   }
 
