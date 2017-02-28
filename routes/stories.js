@@ -15,7 +15,7 @@ const fetchStories = (ids) => {
 }
 
 Router.get('/:endpoint', (req, res) => {
-  const endpoint = req.params.endpoint
+  const endpoint = req.params.endpoint.toLowerCase()
   const url = `${ROOT_URL}/${endpoint}.json`
 
   axios(url)
