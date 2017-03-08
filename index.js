@@ -7,6 +7,7 @@ const express = require('express')
 const app = express()
 const server = require('http').Server(app)
 
+app.use(express.static('watch'))
 const watchNode = require('./watch')
 const dashboardConnection = watchNode.createConnection(server)
 const options = {
