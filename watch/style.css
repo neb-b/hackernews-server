@@ -43,3 +43,8 @@ h1, h2, h3 {
   background-color: #ec2a16;
   box-shadow: 0 0 2rem #ec2a16;
 }
+
+.requests-breakdown {
+  text-align: center;
+  padding: 50px;
+}

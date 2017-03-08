@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>hNews Dashboard</title>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat:900" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-
-</head>
-<body>
-  <div class="container">
-    <h1 class="title">hNews dashboard</h1>
-    <div id="beacon" class="beacon"></div>
-    <h2 class="center totalRequests">Total requests: <span id="total"></span></h2>
-    <h3 class="center">Requests/Hour: <span id="rph"></span></h3>
-  </div>
-</body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
-<script type="text/javascript" src="watch-client.js"></script>
+  <head>
+    <meta charset="UTF-8">
+    <title>hNews Dashboard</title>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:900" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">hNews dashboard</h1>
+      <div id="beacon" class="beacon"></div>
+      <h2 class="center totalRequests">Total requests: <span id="total"></span></h2>
+      <h3 class="center">Requests/Hour: <span id="rph"></span></h3>
+      <div id="requests-breakdown" class="requests-breakdown"></div>
+    </div>
+  </body>
+  <script type="text/javascript" src="watch-client.js"></script>
 </html>

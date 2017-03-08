@@ -8,9 +8,10 @@ const MS_IN_HOUR = 3600000
 const createDashboard = (results) => {
   const totalRequests = JSON.parse(results[0]) || 0
   const requestsLastHour = results[1] || 0
+  const requestsBreakdown = results[2] || {}
 
   return {
-    totalRequests, requestsLastHour
+    totalRequests, requestsLastHour, breakdown: requestsBreakdown
   }
 }
 
@@ -30,6 +31,7 @@ exports.createConnection = function(server) {
     client.multi()
       .zscore('requests', 'total')
       .zcount('history', oneHourPrior, now)
+      .hgetall('requests-breakdown')
       .exec((err, results) => {
         if (err) return reject(err)
 
@@ -49,27 +51,37 @@ exports.watch = function(req, res, next) {
     io.emit(key, JSON.stringify(data))
   }
 
-  const updateRedis = () => {
+  const addRequest = (endpoint) => {
     const now = Date.now()
     const oneHourPrior = now - MS_IN_HOUR
 
     return new Promise((resolve, reject) => {
+
       client.multi()
         .zscore('requests', 'total')
         .zincrby('requests', 1, 'total')
         .zcount('history', oneHourPrior, now)
         .zadd('history', now, now)
+        .hgetall('requests-breakdown')
         .exec((err, results) => {
           if (err) return reject(err)
 
           const totalRequests = JSON.parse(results[0]) + 1 || 1
           const requestsLastHour = results[2] + 1 || 1
 
-          const dashboardData = {
-            totalRequests, requestsLastHour
-          }
+          const requestsBreakdown = results[4] || {}
+          const hasRequest = requestsBreakdown.hasOwnProperty(endpoint)
+          const totalForThisEndpoint = hasRequest ? JSON.parse(requestsBreakdown[endpoint]) + 1 : 1
 
-          resolve(dashboardData)
+          client.hset('requests-breakdown', endpoint, totalForThisEndpoint, (err, reply) => {
+            const dashboardData = {
+              totalRequests,
+              requestsLastHour,
+              breakDown: requestsBreakdown
+            }
+
+            resolve(dashboardData)
+          })
         })
     })
   }
@@ -77,7 +89,7 @@ exports.watch = function(req, res, next) {
   if (req.path === dashboardPath) {
     res.sendFile(path.join(`${__dirname}/watch.html`))
   } else {
-    updateRedis()
+    addRequest(req.path)
       .then((dashboard) => emit('request', dashboard))
       .then(next)
       .catch((err) => {
