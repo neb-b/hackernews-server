@@ -15,15 +15,16 @@ const fetchStory = (id) => {
   )
 }
 
-const fetchStories = (endpoint, ids, savedIds = []) => {
+const fetchStories = (endpoint, ids, savedIds) => {
   const length = ids.length
-  const idsToFetch = ids.slice().splice(0,30).concat(savedIds)
+  const savedIdsArr = savedIds || []
+  const idsToFetch = ids.slice().splice(0,30).concat(savedIdsArr)
 
   return Promise.all(idsToFetch.map(fetchStory))
     .then((allStories) => {
 
-      const savedStories = allStories.slice(allStories.length - savedIds.length, allStories.length)
-      const stories = allStories.slice(0, allStories.length - savedIds.length)
+      const savedStories = allStories.slice(allStories.length - savedIdsArr.length, allStories.length)
+      const stories = allStories.slice(0, allStories.length - savedIdsArr.length)
       return { savedStories, stories }
     })
 }
