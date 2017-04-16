@@ -6,8 +6,6 @@ const Promise = require('bluebird')
 const Router = express.Router()
 const _ = require('lodash')
 const ROOT_URL = 'https://hacker-news.firebaseio.com/v0'
-const cacheMgr = require('redis')
-const REDIS_HASH = process.env.REDIS_HASH
 const fetchItems = require('./fetch-items')
 
 const fetchStory = (id) => {
