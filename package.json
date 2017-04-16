@@ -12,10 +12,13 @@
     "axios": "^0.15.3",
     "bluebird": "^3.4.7",
     "body-parser": "^1.15.2",
+    "dotenv": "^4.0.0",
     "express": "^4.14.0",
     "ioredis": "^2.5.0",
+    "lodash": "^4.17.4",
     "morgan": "^1.7.0",
     "react-native-dotenv": "^0.0.3",
+    "react-native-safari-view": "^2.0.0",
     "redis": "^2.6.5",
     "request": "^2.79.0",
     "socket.io": "^1.7.3"
